@@ -4,6 +4,7 @@ $Folder = "C:\Users\user\Desktop"
 $CPU_Daily_CSV = "$Folder\$ServerName" + "_$TodayDate" + "_CPU.csv"
 $Mem_Daily_CSV = "$Folder\$ServerName" + "_$TodayDate" + "_Mem.csv"
 $Disk_Daily_CSV = "$Folder\$ServerName" + "_$TodayDate" + "_Disk.csv"
+$DailyerrLog = "$Folder\DailyErr.log"
 
 function Percent_Used{
 	param([array] $Freespace)
@@ -44,3 +45,24 @@ If (!(Test-Path $Disk_Daily_CSV)){
 	"Date,C_Drive_Usage,D_Drive_Usage" >> $Disk_Daily_CSV
 }
 "$Current_Time,$Pct_Use_C,$Pct_Use_D" >> $Disk_Daily_CSV
+
+#Logging
+$CPU_File_Modify_Date=(Get-ChildItem $CPU_Daily_CSV).LastWriteTime
+$Mem_File_Modify_Date=(Get-ChildItem $Mem_Daily_CSV).LastWriteTime
+$Disk_File_Modify_Date=(Get-ChildItem $Disk_Daily_CSV).LastWriteTime
+
+$CPU_File_Update_Time=NEW-TIMESPAN -Start $Current_Time -End $CPU_File_Modify_Date
+$Mem_File_Update_Time=NEW-TIMESPAN -Start $Current_Time -End $Mem_File_Modify_Date
+$Disk_File_Update_Time=NEW-TIMESPAN -Start $Current_Time -End $Disk_File_Modify_Date
+
+If ($CPU_File_Update_Time.Minutes -gt 5){
+	Write-Output "$Current_Time $CPU_Daily_CSV not update. Please Check!" | Out-file $DailyErrLog -append
+}
+
+If ($Mem_File_Update_Time.Minutes -gt 5){
+	Write-Output "$Current_Time $Mem_Daily_CSV not update. Please Check!" | Out-file $DailyErrLog -append
+}
+
+If ($Disk_File_Update_Time.Minutes -gt 5){
+	Write-Output "$Current_Time $Disk_Daily_CSV not update. Please Check!" | Out-file $DailyErrLog -append
+}
